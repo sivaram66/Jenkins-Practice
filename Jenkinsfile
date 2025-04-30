@@ -2,127 +2,52 @@ pipeline {
     agent any
 
     environment {
-        HTML_FILE = 'index.html'
-        GIT_CREDENTIALS_ID = 'github-credentials' // Make sure this ID is added in Jenkins Credentials
-        GIT_REPO_URL = 'https://github.com/sivaram66/Jenkins-Practice.git'
-        GIT_BRANCH = 'main'
+        // Define environment variables
+        MY_VAR = 'Hello, Jenkins!'
+        WORK_DIR = '/home/jenkins/workspace'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Code') {
             steps {
-                // Checkout the code from GitHub with credentials
-                git branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}", url: "${env.GIT_REPO_URL}"
+                // Cloning code from GitHub repository
+                git 'https://github.com/sivaram66/Jenkins-Practice.git'
             }
         }
 
-        stage('Create HTML File') {
+        stage('Run Shell Script') {
             steps {
-                script {
-                    def htmlContent = '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Message</title>
-</head>
-<body>
-    <h1>Hello, How are you?</h1>
-</body>
-</html>'''
-
-                    // Save HTML file in the root
-                    writeFile file: "${env.HTML_FILE}", text: htmlContent
-                }
+                // Running a simple shell script
+                sh '''
+                echo "This is a shell script"
+                # Any other commands you want to run
+                echo "Creating a new file"
+                touch newfile.txt
+                echo "This is a new file created by the shell script." > newfile.txt
+                '''
             }
         }
 
-        stage('Commit & Push to GitHub') {
+        stage('Print Working Directory Content') {
             steps {
-                script {
-                    // Push updated file to GitHub
-                    sh '''
-                        git config --global user.email "you@example.com"
-                        git config --global user.name "Jenkins CI"
-                        git add index.html
-                        git commit -m "Auto-update index.html via Jenkins" || echo "No changes to commit"
-                        git push origin HEAD:main
-                    '''
-                }
+                // Printing the content of the current working directory
+                sh 'ls -l'
+            }
+        }
+
+        stage('Print Environment Variables') {
+            steps {
+                // Print environment variables
+                echo "Environment Variable MY_VAR: ${MY_VAR}"
+                echo "Working Directory: ${WORK_DIR}"
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Website deployed via GitHub Pages!"
-        }
-        failure {
-            echo "❌ Pipeline failed!"
-        }
-    }
-}
-pipeline {
-    agent any
-
-    environment {
-        HTML_FILE = 'index.html'
-        GIT_CREDENTIALS_ID = 'github-credentials' // Make sure this ID is added in Jenkins Credentials
-        GIT_REPO_URL = 'https://github.com/sivaram66/Jenkins-Practice.git'
-        GIT_BRANCH = 'main'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the code from GitHub with credentials
-                git branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}", url: "${env.GIT_REPO_URL}"
-            }
-        }
-
-        stage('Create HTML File') {
-            steps {
-                script {
-                    def htmlContent = '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Message</title>
-</head>
-<body>
-    <h1>Hello, How are you?</h1>
-</body>
-</html>'''
-
-                    // Save HTML file in the root
-                    writeFile file: "${env.HTML_FILE}", text: htmlContent
-                }
-            }
-        }
-
-        stage('Commit & Push to GitHub') {
-            steps {
-                script {
-                    // Push updated file to GitHub
-                    sh '''
-                        git config --global user.email "you@example.com"
-                        git config --global user.name "Jenkins CI"
-                        git add index.html
-                        git commit -m "Auto-update index.html via Jenkins" || echo "No changes to commit"
-                        git push origin HEAD:main
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Website deployed via GitHub Pages!"
-        }
-        failure {
-            echo "❌ Pipeline failed!"
+        always {
+            // Always run this after the pipeline finishes
+            echo 'Pipeline execution completed.'
         }
     }
 }
